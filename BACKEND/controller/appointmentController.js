@@ -1,3 +1,4 @@
+import { pendingSocketNotifications, Socket } from "../app.js";
 import { catchAsyncErrors } from "../middlewares/catchAsyncErrors.js";
 import ErrorHandler from "../middlewares/errorMiddleware.js";
 import { Appointment } from "../models/appointmentSchema.js";
@@ -100,6 +101,11 @@ export const updateAppointmentStatus = catchAsyncErrors(
       runValidators: true,
       useFindAndModify: false,
     });
+    let sent = false;
+    Socket.emit("appointmentStatusUpdated", appointment, (success) => {
+      sent = success;
+    });
+    if(!sent) pendingSocketNotifications.push(appointment.patientId);
     res.status(200).json({
       success: true,
       message: "Appointment Status Updated!",

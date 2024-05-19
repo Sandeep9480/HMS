@@ -8,6 +8,10 @@ import messageRouter from "./router/messageRouter.js";
 import { errorMiddleware } from "./middlewares/errorMiddleware.js";
 import userRouter from "./router/userRouter.js";
 import appointmentRouter from "./router/appointmentRouter.js";
+import io, { httpServer } from "./socket.js";
+
+export let Socket;
+export const pendingSocketNotifications = [];
 
 const app = express();
 config({ path: "./config/config.env" });
@@ -31,5 +35,12 @@ app.use("/api/v1/message", messageRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/appointment", appointmentRouter);
 dbConnection();
+httpServer.listen(3000, () => {
+  io.on("connection", (socket) => {
+    socket.connected && console.log("socket service initialized successfully on 3000")
+    Socket = socket;
+  }
+  );
+});
 app.use(errorMiddleware);
 export default app;
